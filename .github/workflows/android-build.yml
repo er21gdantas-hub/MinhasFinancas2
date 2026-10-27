@@ -1,0 +1,50 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle (com cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      # Se o gradle-wrapper.jar (binário) não estiver no repositório,
+      # gera o wrapper oficial automaticamente.
+      - name: Gerar Gradle Wrapper se necessário
+        run: |
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            mkdir /tmp/wrapper-gen && cd /tmp/wrapper-gen
+            gradle wrapper --gradle-version 8.9 --distribution-type bin
+            cd "$GITHUB_WORKSPACE"
+            cp /tmp/wrapper-gen/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+            cp /tmp/wrapper-gen/gradlew gradlew
+            cp /tmp/wrapper-gen/gradlew.bat gradlew.bat
+          fi
+
+      - name: Permissão de execução do gradlew
+        run: chmod +x ./gradlew
+
+      - name: Compilar APK debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Publicar APK como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: minhas-financas-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

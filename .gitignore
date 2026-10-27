@@ -1,0 +1,15 @@
+*.iml
+.gradle/
+.idea/
+local.properties
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.jks
+*.keystore
+.DS_Store
+# O gradle-wrapper.jar DEVE ser versionado (se existir)
+!gradle/wrapper/gradle-wrapper.jar
